@@ -85,7 +85,8 @@
   "scripts": {
     "test": "echo \"No tests yet\"",
     "dev": "nodemon src/index.js",
-    "commandsreg": "node src/deploy-commands.js"
+    "commandsreg": "node src/deploy-commands.js",
+    "start": "node src/index.js"
   },
   "keywords": [],
   "author": "",
