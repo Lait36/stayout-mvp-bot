@@ -19,7 +19,10 @@ client.commands = new Collection();
 const commandPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandPath).filter((file) => file.endsWith('.js'));
 
+// ----------------------------
 // Загружаем команды
+// ----------------------------
+
 for (const file of commandFiles) {
   const filePath = path.join(commandPath, file);
   const command = await import(`file://${filePath}`);
@@ -34,13 +37,17 @@ for (const file of commandFiles) {
 // ----------------------------
 // Обработчик команд
 // ----------------------------
+
 client.on(Events.InteractionCreate, async (interaction) => {
   if (!interaction.isChatInputCommand()) return;
 
-  // ✅ Проверка: команды будут работать только на серверах из списка
+// ----------------------------
+// ✅ Проверка: команды будут работать только на серверах из списка
+// ----------------------------
+
   const allowedGuilds = [process.env.GUILD_ID, process.env.GUILD_ID_TEST].filter(Boolean); 
   if (!allowedGuilds.includes(interaction.guild.id)) {
-    return interaction.reply({ content: 'Эта команда не доступна на этом сервере.', ephemeral: true });
+    return interaction.reply({ content: 'Команды не доступны на этом сервере.', ephemeral: true });
   }
 
   const command = interaction.client.commands.get(interaction.commandName);
