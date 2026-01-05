@@ -1,3 +1,5 @@
+// srs/commands/whitebear.js
+
 import { SlashCommandBuilder } from 'discord.js';
 
 export default {

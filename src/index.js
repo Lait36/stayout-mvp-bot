@@ -11,22 +11,25 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Ready! Logged in as ${readyClient.user.tag}`);
 });
+
 client.commands = new Collection();
 
 const commandPath = path.join(__dirname, 'commands');
 const commandFiles = fs.readdirSync(commandPath).filter((file) => file.endsWith('.js'));
 
 // ----------------------------
-// Загружаем команды
+// Загрузка команд
 // ----------------------------
 
 for (const file of commandFiles) {
   const filePath = path.join(commandPath, file);
   const command = await import(`file://${filePath}`);
   const commandData = command.default || command;
+
   if ('data' in commandData && 'execute' in commandData) {
     client.commands.set(commandData.data.name, commandData);
   } else {
@@ -35,40 +38,51 @@ for (const file of commandFiles) {
 }
 
 // ----------------------------
-// Обработчик команд
+// 🆕 Глобальный обработчик команд
 // ----------------------------
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
+  try { // ✅ ИЗМЕНЕНО — try/catch теперь оборачивает ВСЁ
 
-// ----------------------------
-// ✅ Проверка: команды будут работать только на серверах из списка
-// ----------------------------
+    if (!interaction.isChatInputCommand()) return;
 
-  const allowedGuilds = [process.env.GUILD_ID, process.env.GUILD_ID_TEST].filter(Boolean); 
-  if (!allowedGuilds.includes(interaction.guild.id)) {
-    return interaction.reply({ content: 'Команды не доступны на этом сервере.', ephemeral: true });
-  }
-
-  const command = interaction.client.commands.get(interaction.commandName);
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found`);
-    return;
-  }
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    if (interaction.replied || interaction.deferred) {
-      await interaction.followUp({
-        content: 'There was an error while executing this command!',
-        flags: MessageFlags.Ephemeral,
+    // 🆕 ДОБАВЛЕНО — защита от ЛС
+    if (!interaction.guild) {
+      return interaction.reply({
+        content: '❌ Команды доступны только на сервере.',
+        ephemeral: true,
       });
-    } else {
+    }
+
+    // 🆕 ДОБАВЛЕНО — ограничение серверов
+    const allowedGuilds = [
+      process.env.GUILD_ID,
+      process.env.GUILD_ID_TEST,
+    ].filter(Boolean);
+
+    if (!allowedGuilds.includes(interaction.guild.id)) {
+      return interaction.reply({
+        content: '❌ Команды недоступны на этом сервере.',
+        ephemeral: true,
+      });
+    }
+
+    const command = interaction.client.commands.get(interaction.commandName);
+    if (!command) {
+      console.error(`No command matching ${interaction.commandName} was found`);
+      return;
+    }
+
+    await command.execute(interaction); // ✅ ИЗМЕНЕНО — теперь под защитой
+
+  } catch (error) {
+    console.error('🔥 Interaction error:', error);
+
+    // 🆕 ДОБАВЛЕНО — защита от двойного reply
+    if (!interaction.replied && !interaction.deferred) {
       await interaction.reply({
-        content: 'There was an error while executing this command!',
-        flags: MessageFlags.Ephemeral,
+        content: '❌ Внутренняя ошибка бота.',
+        ephemeral: true,
       });
     }
   }
