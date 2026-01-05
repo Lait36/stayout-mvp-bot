@@ -42,49 +42,21 @@ for (const file of commandFiles) {
 // ----------------------------
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  try { // ✅ ИЗМЕНЕНО — try/catch теперь оборачивает ВСЁ
-
+  try {
     if (!interaction.isChatInputCommand()) return;
+    if (!interaction.guild) return;
 
-    // 🆕 ДОБАВЛЕНО — защита от ЛС
-    if (!interaction.guild) {
-      return interaction.reply({
-        content: '❌ Команды доступны только на сервере.',
-        ephemeral: true,
-      });
-    }
-
-    // 🆕 ДОБАВЛЕНО — ограничение серверов
-    const allowedGuilds = [
-      process.env.GUILD_ID,
-      process.env.GUILD_ID_TEST,
-    ].filter(Boolean);
-
-    if (!allowedGuilds.includes(interaction.guild.id)) {
-      return interaction.reply({
-        content: '❌ Команды недоступны на этом сервере.',
-        ephemeral: true,
-      });
-    }
+    const allowedGuilds = [process.env.GUILD_ID, process.env.GUILD_ID_TEST].filter(Boolean);
+    if (!allowedGuilds.includes(interaction.guild.id)) return;
 
     const command = interaction.client.commands.get(interaction.commandName);
-    if (!command) {
-      console.error(`No command matching ${interaction.commandName} was found`);
-      return;
-    }
+    if (!command) return;
 
-    await command.execute(interaction); // ✅ ИЗМЕНЕНО — теперь под защитой
-
+    // ✅ Все команды должны сами делать deferReply и editReply
+    await command.execute(interaction);
   } catch (error) {
     console.error('🔥 Interaction error:', error);
-
-    // 🆕 ДОБАВЛЕНО — защита от двойного reply
-    if (!interaction.replied && !interaction.deferred) {
-      await interaction.reply({
-        content: '❌ Внутренняя ошибка бота.',
-        ephemeral: true,
-      });
-    }
+    // ❌ НИКАКИХ reply здесь! Interaction может быть протухшим
   }
 });
 

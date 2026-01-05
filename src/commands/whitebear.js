@@ -6,25 +6,23 @@ export default {
   data: new SlashCommandBuilder()
     .setName('bear')
     .setDescription('Рассчитать время следующего респавна по логу')
-    .addStringOption(option =>
-      option
-        .setName('log')
-        .setDescription('Лог убийства')
-        .setRequired(true)
+    .addStringOption((option) =>
+      option.setName('log').setDescription('Лог убийства').setRequired(true)
     ),
 
   async execute(interaction) {
+    await interaction.deferReply();
     const log = interaction.options.getString('log');
 
     // Пример лога: [17:29:56][Урон.Исходящий]: Вы убили: Белый медведь - дальний
-    const regex =
-      /^\[(\d{2}:\d{2}:\d{2})\]\[Урон\.Исходящий\]: Вы убили: (.+?)\s*-\s*(.+)$/;
+    const regex = /^\[(\d{2}:\d{2}:\d{2})\]\[Урон\.Исходящий\]: Вы убили: (.+?)\s*-\s*(.+)$/;
 
     const match = log.match(regex);
 
     if (!match) {
       return interaction.reply({
-        content: '❌ Неверный формат сообщения. Пример: `[17:29:56][Урон.Исходящий]: Вы убили: Белый медведь - B2-1`',
+        content:
+          '❌ Неверный формат сообщения. Пример: `[17:29:56][Урон.Исходящий]: Вы убили: Белый медведь - B2-1`',
         ephemeral: true,
       });
     }
@@ -42,8 +40,7 @@ export default {
     const respawnStart = new Date(killTime.getTime() + 37 * 60 * 1000); // +37м
     // const respawnEnd = new Date(respawnStart.getTime() + 60 * 60 * 1000); // +1ч
 
-    const formatTime = (date) =>
-      date.toTimeString().slice(0, 8); // HH:MM:SS
+    const formatTime = (date) => date.toTimeString().slice(0, 8); // HH:MM:SS
 
     // --- Красивый вывод ---
     const result = `\`\`\`ansi
@@ -52,8 +49,8 @@ export default {
 🛡️ Следующий респавн:
 Начало: \x1b[35m${formatTime(respawnStart)}\x1b[0m
 \`\`\``;
-// Конец : \x1b[31m${formatTime(respawnEnd)}\x1b[0m
+    // Конец : \x1b[31m${formatTime(respawnEnd)}\x1b[0m
 
-    await interaction.reply(result);
+    await interaction.editReply(result);
   },
 };
