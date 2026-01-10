@@ -1,3 +1,5 @@
+//src/index.js
+
 import { Client, Events, GatewayIntentBits, Collection, MessageFlags } from 'discord.js';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -52,11 +54,20 @@ client.on(Events.InteractionCreate, async (interaction) => {
     const command = interaction.client.commands.get(interaction.commandName);
     if (!command) return;
 
-    // ✅ Все команды должны сами делать deferReply и editReply
+    if (command.allowedChannels) {
+      if (!command.allowedChannels.includes(interaction.channelId)) {
+        return interaction.reply({
+          content: '❌ Эта команда доступна только в специальном канале',
+          ephemeral: true,
+        });
+      }
+    }
+
+    //  Все команды должны сами делать deferReply и editReply
     await command.execute(interaction);
   } catch (error) {
     console.error('🔥 Interaction error:', error);
-    // ❌ НИКАКИХ reply здесь! Interaction может быть протухшим
+    // НИКАКИХ reply здесь! Interaction может быть протухшим
   }
 });
 
