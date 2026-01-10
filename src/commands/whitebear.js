@@ -1,6 +1,8 @@
 // srs/commands/whitebear.js
 
 import { SlashCommandBuilder } from 'discord.js';
+import { CHANNELS } from '../config/channel.js';
+
 
 export default {
   data: new SlashCommandBuilder()
@@ -9,6 +11,7 @@ export default {
     .addStringOption((option) =>
       option.setName('log').setDescription('Лог убийства').setRequired(true)
     ),
+    allowedChannels: [CHANNELS.WHITE_BEAR, CHANNELS.TESTING],
 
   async execute(interaction) {
     await interaction.deferReply();
