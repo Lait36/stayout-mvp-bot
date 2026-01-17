@@ -13,6 +13,7 @@ export default {
   allowedChannels: [CHANNELS.TORF, CHANNELS.TESTING],
 
   async execute(interaction) {
+    await interaction.deferReply();
     const log = interaction.options.getString('log');
 
     // Пример лога: [17:29:56][Урон.Исходящий]: Вы убили: Торфяной паук - дальний
@@ -21,7 +22,7 @@ export default {
     const match = log.match(regex);
 
     if (!match) {
-      return interaction.reply({
+      return interaction.editReply({
         content:
           '❌ Неверный формат сообщения. Пример: `[17:29:56][Урон.Исходящий]: Вы убили: Торфяной паук - дальний`',
         ephemeral: true,
@@ -52,6 +53,6 @@ export default {
 Конец : \x1b[31m${formatTime(respawnEnd)}\x1b[0m
 \`\`\``;
 
-    await interaction.reply(result);
+    await interaction.editReply(result);
   },
 };

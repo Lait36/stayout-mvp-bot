@@ -23,7 +23,7 @@ export default {
     const match = log.match(regex);
 
     if (!match) {
-      return interaction.reply({
+      return interaction.editReply({
         content:
           '❌ Неверный формат сообщения. Пример: `[17:29:56][Урон.Исходящий]: Вы убили: Белый медведь - B2-1`',
         ephemeral: true,
@@ -40,7 +40,7 @@ export default {
     const killTime = new Date();
     killTime.setHours(h, m, s, 0);
 
-    const respawnStart = new Date(killTime.getTime() + 37 * 60 * 1000); // +37м
+    const respawnStart = new Date(killTime.getTime() + 35 * 60 * 1000); // +37м
     // const respawnEnd = new Date(respawnStart.getTime() + 60 * 60 * 1000); // +1ч
 
     const formatTime = (date) => date.toTimeString().slice(0, 8); // HH:MM:SS
